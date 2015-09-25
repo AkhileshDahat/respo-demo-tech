@@ -50,7 +50,7 @@ $webappdatabase = "webapp";
 
 $conn_webapp = mysqli_connect($webappserver, $webappusername, $webapppass, $webappdatabase);
 
-// Check connection
+// Check connection check modified
 
 if (!$conn_webapp) {
     die("Connection failed: " . mysqli_connect_error());
@@ -71,8 +71,7 @@ foreach ($accountObj as $key => $account) {
     $phpValue[$key] = $account;
 }
 foreach ($rows as $phpvalues) {
-    foreach ($salesforceValue as $valuearray) {
-        
+    foreach ($salesforceValue as $valuearray) {        
             $ID = $valuearray['Id'];
             $firstname = $valuearray['FirstName'];
             $lastname = $valuearray['LastName'];
@@ -106,8 +105,7 @@ foreach ($rows as $phpvalues) {
                echo "key exist";
                print_R($arraycriteria);               
                exit;*/
-            }
-         
+            }         
             if($phpvalues['criteria'] == 2 ){ echo "dont insert";}
             if($phpvalues['criteria'] == 3 ){ echo "insert";}
             if($phpvalues['criteria'] == 4 ){ echo "insert";}
@@ -134,8 +132,6 @@ foreach ($rows as $phpvalues) {
         }
     }
 }
-
-
 /* for ($i = 0; $i <= count($phpValue); $i++) {
   if (in_array($phpValue[$i]['value'], $salesforceValue)) {
   $ID = $salesforceValue['Id'];
