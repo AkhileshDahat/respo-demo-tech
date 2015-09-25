@@ -42,10 +42,7 @@ foreach ($obj as $fieldName => $item) {
     $salesforceValue[$fieldName] = $item;
 }
 
-
-
 /* Server Details For Criteria */
-
 $webappserver = "localhost";
 $webappusername = "root";
 $webapppass = "developer@456";
@@ -56,37 +53,23 @@ $conn_webapp = mysqli_connect($webappserver, $webappusername, $webapppass, $weba
 // Check connection
 
 if (!$conn_webapp) {
-
     die("Connection failed: " . mysqli_connect_error());
-}
-
-
-
 $sfdc_rules_records = "SELECT * FROM `sfdc_rules` WHERE `moodle_instance_id` = 66 AND `obj_type` LIKE 'Contact'";
 $result_rules = mysqli_query($conn_webapp, $sfdc_rules_records);
 
 $criteria = array('1' => '=', '2' => '!=', '3' => '<', '4' => '>', '5' => '>=', '6' => '<=', '7' => '!= NULL');
-
-
-
 $userObj = $contactObj = $accountObj = array();
 //$rows= array();
 while ($row = $result_rules->fetch_array(MYSQLI_ASSOC)) {
     $rows[] = $row;
 }
-
-
-
 foreach ($rows as $key => $mtsRule) {
     $accountObj[] = $mtsRule;
 }
-
 $phpValue = array();
 foreach ($accountObj as $key => $account) {
     $phpValue[$key] = $account;
 }
-
-
 foreach ($rows as $phpvalues) {
     foreach ($salesforceValue as $valuearray) {
         
@@ -131,11 +114,7 @@ foreach ($rows as $phpvalues) {
             if($phpvalues['criteria'] == 5 ){ echo "insert";}
             if($phpvalues['criteria'] == 6 ){ echo "insert";}
             if($phpvalues['criteria'] == 7 ){ echo "insert";}
-              
-              
-            
-            
-            
+                          
                 /* Check If Email Is provide in Contact Object */  
             $sql = "SELECT `id`, `idnumber` ,`email` ,`username` from `mdl_user` where `idnumber` = '$ID' ";
             $result = mysqli_query($conn, $sql);
