@@ -1,0 +1,194 @@
+<?php
+
+header('Content-type: application/json');
+require('../config.php');
+require_once($CFG->dirroot . '/user/editlib.php');
+
+function checktrueVal($val) {
+
+    if ($val == "true" || is_numeric($val))
+        $value = " " . $val;
+    else
+        $value = " '" . $val . "'";
+    return $value;
+}
+
+/* salesforce data coming */
+//if (isset($_POST)) {
+/* Server Details */
+$servername = "localhost";
+$username = "master4898176838";
+$password = "5809880140";
+$dbname = "master4898176838";
+/* Server Details Ends */
+// Create connection
+$conn = mysqli_connect($servername, $username, $password, $dbname);
+// Check connection
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+
+/* Check External system GetBody json Data */
+//$json = file_get_contents('php://input');
+//$json = '{"Id":"00361000003ZafKAAS","Email":"test@gmail.com","FirstName":"akhilesh","LastName":"dahat"}';
+
+$json = '[{"attributes":{"type":"Contact","url":"/services/data/v34.0/sobjects/Contact/00361000003ZaOyAAK"},"Id":"00361000003ZaOyAAK","Email":"test1@gmail.com","FirstName":"akhilesh","LastName":"testing1"}]';
+$obj = json_decode($json, true);
+
+/* Iterate Over The Loop */
+$salesforceValue = array();
+$saleforceData = array();
+foreach ($obj as $fieldName => $item) {
+    $salesforceValue[$fieldName] = $item;
+}
+
+
+
+/* Server Details For Criteria */
+
+$webappserver = "localhost";
+$webappusername = "root";
+$webapppass = "developer@456";
+$webappdatabase = "webapp";
+
+$conn_webapp = mysqli_connect($webappserver, $webappusername, $webapppass, $webappdatabase);
+
+// Check connection
+
+if (!$conn_webapp) {
+
+    die("Connection failed: " . mysqli_connect_error());
+}
+
+
+
+$sfdc_rules_records = "SELECT * FROM `sfdc_rules` WHERE `moodle_instance_id` = 66 AND `obj_type` LIKE 'Contact'";
+$result_rules = mysqli_query($conn_webapp, $sfdc_rules_records);
+
+$criteria = array('1' => '=', '2' => '!=', '3' => '<', '4' => '>', '5' => '>=', '6' => '<=', '7' => '!= NULL');
+
+
+
+$userObj = $contactObj = $accountObj = array();
+//$rows= array();
+while ($row = $result_rules->fetch_array(MYSQLI_ASSOC)) {
+    $rows[] = $row;
+}
+
+
+
+foreach ($rows as $key => $mtsRule) {
+    $accountObj[] = $mtsRule;
+}
+
+$phpValue = array();
+foreach ($accountObj as $key => $account) {
+    $phpValue[$key] = $account;
+}
+
+
+foreach ($rows as $phpvalues) {
+    foreach ($salesforceValue as $valuearray) {
+        
+            $ID = $valuearray['Id'];
+            $firstname = $valuearray['FirstName'];
+            $lastname = $valuearray['LastName'];
+            $email = $valuearray['Email'];
+
+            /* Generate The random String for the password */
+            $pass = 'T' . random_string(5) . '@321';
+            $password = md5($pass);
+            $secret = random_string(15);
+            $decription = $valuearray['Description'];
+            $mobilePhone = $valuearray['MobilePhone'];
+            $phone = $valuearray['Phone'];
+            $MailingStreet = $valuearray['MailingStreet'];
+            $MailingCity = $valuearray['MailingCity'];
+            $MailingCountry = $valuearray['MailingCountry'];
+          
+            $criteria=array('1'=>'=','2'=>'!=','3'=>'<','4'=>'>', '5'=>'>=','6'=>'<=','7'=>'!= NULL');
+            
+            if(in_array($phpvalues['value'], $valuearray)) {
+            
+               /*echo "<pre>";
+               print_R($phpvalues['criteria'] );               
+               exit;*/
+                
+            if(array_key_exists($phpvalues['criteria'] , $criteria )){ 
+               $arraycriteria = array_values($criteria);
+               foreach($arraycriteria as $keycriteria => $valuecriteria){
+                   echo $valuecriteria ;
+               }
+            /*   echo "<pre>";
+               echo "key exist";
+               print_R($arraycriteria);               
+               exit;*/
+            }
+         
+            if($phpvalues['criteria'] == 2 ){ echo "dont insert";}
+            if($phpvalues['criteria'] == 3 ){ echo "insert";}
+            if($phpvalues['criteria'] == 4 ){ echo "insert";}
+            if($phpvalues['criteria'] == 5 ){ echo "insert";}
+            if($phpvalues['criteria'] == 6 ){ echo "insert";}
+            if($phpvalues['criteria'] == 7 ){ echo "insert";}
+              
+              
+            
+            
+            
+                /* Check If Email Is provide in Contact Object */  
+            $sql = "SELECT `id`, `idnumber` ,`email` ,`username` from `mdl_user` where `idnumber` = '$ID' ";
+            $result = mysqli_query($conn, $sql);
+            if (mysqli_num_rows($result) > 0) {
+                $updaterecords = "Update `mdl_user` SET  `username` = ' $email' , `firstname` = '$firstname', `lastname` = '$lastname', `email` = '$email', `description` = '$decription', `phone1` ='$phone', `phone2` = '$mobilePhone',`address` = '$MailingStreet', `city` = '$MailingCity' , `country` = '$MailingCountry'  WHERE `idnumber` = '$ID'";
+
+                if (mysqli_query($conn, $updaterecords)) {
+                    echo "New record updated successfully";
+                }
+            } else {
+                $insertrecords = "INSERT INTO `mdl_user` (`id`, `auth`, `confirmed`, `policyagreed`, `deleted`, `suspended`, `mnethostid`, `username`, `password`, `idnumber`, `firstname`, `lastname`, `email`, `emailstop`, `icq`, `skype`, `yahoo`, `aim`, `msn`, `phone1`, `phone2`, `institution`, `department`, `address`, `city`, `country`, `lang`, `calendartype`, `theme`, `timezone`, `firstaccess`, `lastaccess`, `lastlogin`, `currentlogin`, `lastip`, `secret`, `picture`, `url`, `description`, `descriptionformat`, `mailformat`, `maildigest`, `maildisplay`, `autosubscribe`, `trackforums`, `timecreated`, `timemodified`, `trustbitmask`, `imagealt`, `lastnamephonetic`, `firstnamephonetic`, `middlename`, `alternatename`, `salesforce_account_name`) VALUES (NULL, 'email', '0', '0', '0', '0', '0', '$email', '$password', '$ID', '$firstname', '$lastname', '$email', '0', '', '', '', '', '', '$phone', '$mobilePhone', '', '', '$MailingStreet', '$MailingCity', '$MailingCountry', 'en', 'gregorian', '', '99', '0', '0', '0', '0', '', '$secret', '0', '', '$decription', '1', '1', '0', '2', '1', '0', '0', '0', '0', NULL, NULL, NULL, NULL, NULL, 'NULL')";
+            }
+            if (mysqli_query($conn, $insertrecords)) {
+                echo "New record created successfully";
+            }
+         
+        }
+    }
+}
+
+
+/* for ($i = 0; $i <= count($phpValue); $i++) {
+  if (in_array($phpValue[$i]['value'], $salesforceValue)) {
+  $ID = $salesforceValue['Id'];
+  $firstname = $salesforceValue['FirstName'];
+  $lastname = $salesforceValue['LastName'];
+  $email = $salesforceValue['Email'];
+
+  /* Generate The random String for the password */
+/*   $pass = 'T' . random_string(5) . '@321';
+  $password = md5($pass);
+  $secret = random_string(15);
+  $decription = $salesforceValue['Description'];
+  $mobilePhone = $salesforceValue['MobilePhone'];
+  $phone = $salesforceValue['Phone'];
+  $MailingStreet = $salesforceValue['MailingStreet'];
+  $MailingCity = $salesforceValue['MailingCity'];
+  $MailingCountry = $salesforceValue['MailingCountry'];
+
+  $sql = "SELECT `id`, `idnumber` ,`email` ,`username` from `mdl_user` where `idnumber` = '$ID' ";
+  $result = mysqli_query($conn, $sql);
+  if (mysqli_num_rows($result) > 0) {
+  $updaterecords = "Update `mdl_user` SET  `username` = ' $email' , `firstname` = '$firstname', `lastname` = '$lastname', `email` = '$email', `description` = '$decription', `phone1` ='$phone', `phone2` = '$mobilePhone',`address` = '$MailingStreet', `city` = '$MailingCity' , `country` = '$MailingCountry'  WHERE `idnumber` = '$ID'";
+
+  if (mysqli_query($conn, $updaterecords)) {
+  echo "New record created successfully";
+  }
+  } else {
+  $insertrecords = "INSERT INTO `mdl_user` (`id`, `auth`, `confirmed`, `policyagreed`, `deleted`, `suspended`, `mnethostid`, `username`, `password`, `idnumber`, `firstname`, `lastname`, `email`, `emailstop`, `icq`, `skype`, `yahoo`, `aim`, `msn`, `phone1`, `phone2`, `institution`, `department`, `address`, `city`, `country`, `lang`, `calendartype`, `theme`, `timezone`, `firstaccess`, `lastaccess`, `lastlogin`, `currentlogin`, `lastip`, `secret`, `picture`, `url`, `description`, `descriptionformat`, `mailformat`, `maildigest`, `maildisplay`, `autosubscribe`, `trackforums`, `timecreated`, `timemodified`, `trustbitmask`, `imagealt`, `lastnamephonetic`, `firstnamephonetic`, `middlename`, `alternatename`, `salesforce_account_name`) VALUES (NULL, 'email', '0', '0', '0', '0', '0', '$email', '$password', '$ID', '$firstname', '$lastname', '$email', '0', '', '', '', '', '', '$phone', '$mobilePhone', '', '', '$MailingStreet', '$MailingCity', '$MailingCountry', 'en', 'gregorian', '', '99', '0', '0', '0', '0', '', '$secret', '0', '', '$decription', '1', '1', '0', '2', '1', '0', '0', '0', '0', NULL, NULL, NULL, NULL, NULL, 'NULL')";
+  }
+  if (mysqli_query($conn, $insertrecords)) {
+  echo "New record created successfully";
+  }
+  }
+  } */
+?>
